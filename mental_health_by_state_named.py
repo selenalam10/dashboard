@@ -1,3 +1,4 @@
+import streamlit as st
 import pandas as pd
 
 # Load the cleaned CSV instead of the large .XPT
@@ -42,5 +43,22 @@ summary['State'] = summary['_STATE'].map(fips_to_state)
 summary = summary[['State', 'Depression_Pct', 'Avg_Unhealthy_Days']]
 summary = summary.sort_values('Depression_Pct', ascending=False)
 
-# Print or save the summary
-print(summary)
+# ✅ DISPLAY THE RESULTS IN STREAMLIT
+st.title("US Mental Health Summary by State (BRFSS 2022)")
+st.write("Source: CDC BRFSS")
+
+# Add filter sliders
+min_depression = st.slider("Minimum Depression %", 0.0, 40.0, 10.0)
+max_unhealthy = st.slider("Max Avg Unhealthy Days", 0.0, 30.0, 20.0)
+
+# Apply filters
+filtered = summary[
+    (summary["Depression_Pct"] >= min_depression) &
+    (summary["Avg_Unhealthy_Days"] <= max_unhealthy)
+]
+
+# Show data
+st.dataframe(filtered)
+
+# Option to download
+st.download_button("Download Filtered Data", filtered.to_csv(index=False), "filtered_data.csv", "text/csv")
